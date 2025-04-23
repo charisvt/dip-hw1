@@ -150,3 +150,40 @@ def perform_histogram_modification(img_array, hist_ref, mode):
         modified_img = apply_hist_modification_transform(img_array, modification_transform)
 
     return modified_img
+
+def perform_hist_eq(img_array, mode):
+    """
+    Perform histogram equalization on an image array.
+    
+    Args:
+        img_array: 2D numpy array of dtype=float in range [0, 1] representing a grayscale image
+        mode: Equalization approach: "greedy", "non-greedy", or "post-disturbance"
+        
+    Returns:
+        2D numpy array representing the equalized image
+    """
+    # For histogram equalization, create a uniform reference histogram
+    hist_ref = {i: 1 for i in range(256)}  # Uniform distribution
+    
+    # Call the histogram modification function with the uniform reference histogram
+    return perform_histogram_modification(img_array, hist_ref, mode)
+
+def perform_hist_matching(img_array, img_array_ref, mode):
+    """
+    Perform histogram matching to make the histogram of img_array match that of img_array_ref.
+    
+    Args:
+        img_array: 2D numpy array of dtype=float in range [0, 1] representing source grayscale image
+        img_array_ref: 2D numpy array of dtype=float in range [0, 1] representing reference grayscale image
+        mode: Matching approach: "greedy", "non-greedy", or "post-disturbance"
+        
+    Returns:
+        2D numpy array representing the processed image with histogram matched to reference
+    """
+    # Calculate the histogram of the reference image
+    hist_ref = calculate_hist_of_img(img_array_ref, return_normalized=False)
+    
+    # Call the histogram modification function with the reference histogram
+    processed_img = perform_histogram_modification(img_array, hist_ref, mode)
+    
+    return processed_img
