@@ -20,13 +20,23 @@ def calculate_hist_of_img(img_array, return_normalized):
 def apply_hist_modification_transform(img_array, modification_transform):
     transformed_img = np.copy(img_array)
     
+    # Create a lookup table for all possible intensity values (0-255)
+    # to avoid conditional checks inside the nested loops
+    lookup = {}
+    for i in range(256):
+        if i in modification_transform:
+            lookup[i] = modification_transform[i]
+        else:
+            # Find closest intensity level that has a mapping
+            closest_level = min(modification_transform.keys(), key=lambda x: abs(x - i))
+            lookup[i] = modification_transform[closest_level]
+    
     # Iterate through the image array and apply the transformation
     for i in range(transformed_img.shape[0]):
         for j in range(transformed_img.shape[1]):
             # Convert pixel value to intensity (0-255 range) and apply the transformation
             pixel_value = int(transformed_img[i, j] * 255)  # Convert to 0-255 range
-            if pixel_value in modification_transform:
-                transformed_img[i, j] = modification_transform[pixel_value] / 255.0  # Convert back to 0-1 range
+            transformed_img[i, j] = lookup[pixel_value] / 255.0  # Convert back to 0-1 range
     
     return transformed_img
 

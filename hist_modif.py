@@ -62,31 +62,32 @@ def perform_histogram_modification(img_array, hist_ref, mode):
         current_output_idx = 0
         accumulated_count = 0
         
-        i = 0
-        while i < len(input_levels) and current_output_idx < Lg:
-            f_val = input_levels[i]
-            
-            # Calculate deficiency
+        # Process each input level in order
+        for f_val in input_levels:
+            # If we've exhausted output levels, assign to the last one
+            if current_output_idx >= Lg:
+                modification_transform[f_val] = output_levels[-1]
+                continue
+                
+            # Calculate deficiency for current output level
             deficiency = target_bin_count - accumulated_count
             
             # Check if current input level should be mapped to current output level
-            if deficiency >= hist_input[f_val] / 2:
+            if accumulated_count == 0 or deficiency >= hist_input[f_val] / 2:
                 # Map this input level to current output level
                 modification_transform[f_val] = output_levels[current_output_idx]
                 accumulated_count += hist_input[f_val]
-                i += 1
             else:
-                # Move to next output level
+                # Move to next output level and map this input level to it
                 current_output_idx += 1
-                accumulated_count = 0
-                # Don't increment i, as we need to reconsider the current f_val for the next output level
+                
+                # Check if we've run out of output levels
+                if current_output_idx >= Lg:
+                    modification_transform[f_val] = output_levels[-1]
+                else:
+                    modification_transform[f_val] = output_levels[current_output_idx]
+                    accumulated_count = hist_input[f_val]
         
-        # Assign any remaining input levels to the last output level
-        while i < len(input_levels):
-            f_val = input_levels[i]
-            modification_transform[f_val] = output_levels[-1]
-            i += 1
-            
         # Step 6: Apply the transformation
         modified_img = apply_hist_modification_transform(img_array, modification_transform)
 
@@ -152,38 +153,15 @@ def perform_histogram_modification(img_array, hist_ref, mode):
     return modified_img
 
 def perform_hist_eq(img_array, mode):
-    """
-    Perform histogram equalization on an image array.
-    
-    Args:
-        img_array: 2D numpy array of dtype=float in range [0, 1] representing a grayscale image
-        mode: Equalization approach: "greedy", "non-greedy", or "post-disturbance"
-        
-    Returns:
-        2D numpy array representing the equalized image
-    """
     # For histogram equalization, create a uniform reference histogram
-    hist_ref = {i: 1 for i in range(256)}  # Uniform distribution
+    hist_ref = {i: 1 for i in range(256)}
     
     # Call the histogram modification function with the uniform reference histogram
     return perform_histogram_modification(img_array, hist_ref, mode)
 
 def perform_hist_matching(img_array, img_array_ref, mode):
-    """
-    Perform histogram matching to make the histogram of img_array match that of img_array_ref.
-    
-    Args:
-        img_array: 2D numpy array of dtype=float in range [0, 1] representing source grayscale image
-        img_array_ref: 2D numpy array of dtype=float in range [0, 1] representing reference grayscale image
-        mode: Matching approach: "greedy", "non-greedy", or "post-disturbance"
-        
-    Returns:
-        2D numpy array representing the processed image with histogram matched to reference
-    """
     # Calculate the histogram of the reference image
     hist_ref = calculate_hist_of_img(img_array_ref, return_normalized=False)
     
     # Call the histogram modification function with the reference histogram
-    processed_img = perform_histogram_modification(img_array, hist_ref, mode)
-    
-    return processed_img
+    return perform_histogram_modification(img_array, hist_ref, mode)
