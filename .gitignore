@@ -1,3 +1,9 @@
 hw1_images.zip
 histogram_equalization_results.png
 histogram_matching_results.png
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
