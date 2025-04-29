@@ -7,14 +7,17 @@ def calculate_hist_of_img(img_array, return_normalized):
 
     # Calculate histogram by iterating over image
     for pixel_value in img_array.flatten():
-        intensity = int(pixel_value * 255) # Convert pixel value to intensity level
-        hist[intensity] += 1 # Increment the count for the corresponding intensity level
+        # Convert pixel value (0-1 range) to intensity level (0-255 range)
+        intensity = int(pixel_value * 255) 
+        # Increment the count for the corresponding intensity level
+        hist[intensity] += 1 
     
     # If normalization is required
     if return_normalized:
         # Normalize the histogram by dividing by the total number of pixels
         total_pixels = img_array.size
         hist = {k: v / total_pixels for k, v in hist.items()}
+    
     return hist
 
 def apply_hist_modification_transform(img_array, modification_transform):

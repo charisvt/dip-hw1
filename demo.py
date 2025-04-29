@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import argparse
+import os
 from hist_utils import calculate_hist_of_img
 from hist_modif import perform_hist_eq, perform_hist_matching
 
@@ -72,6 +73,22 @@ def plot_image_with_histogram(img_array, title, ax_img, ax_hist):
     ax_hist.set_xlabel('Intensity')
     ax_hist.set_ylabel('Frequency')
 
+def save_image(img_array, filename, output_dir='output'):
+    """Save a normalized image to a file in the specified output directory."""
+    # Create output directory if it doesn't exist
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"Created directory: {output_dir}")
+    
+    # Build full path
+    filepath = os.path.join(output_dir, filename)
+    
+    # Convert float image (0-1) to uint8 (0-255)
+    img_uint8 = (img_array * 255).astype(np.uint8)
+    # Create PIL image and save
+    Image.fromarray(img_uint8).save(filepath)
+    print(f"Saved {filepath}")
+
 def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Histogram Equalization and Matching Demo')
@@ -85,6 +102,10 @@ def main():
     # Convert to numpy arrays and normalize to [0, 1]
     input_array = np.array(input_img).astype(float) / 255.0
     ref_array = np.array(ref_img).astype(float) / 255.0
+    
+    # Save original images
+    save_image(input_array, 'original.png')
+    save_image(ref_array, 'reference.png')
     
     # Analyze original image
     if args.verbose:
@@ -113,12 +134,18 @@ def main():
         processed_img = perform_hist_eq(input_array, mode)
         plot_image_with_histogram(processed_img, f'Equalized ({mode})', axes[i, 0], axes[i, 1])
         
+        # Save individual equalized image
+        save_image(processed_img, f'equalized_{mode}.png')
+        
         # Analyze equalized image
         analyze_histogram(processed_img, f"Equalized Image ({mode})", args.verbose)
     
     plt.tight_layout()
     plt.subplots_adjust(top=0.92)
-    plt.savefig('histogram_equalization_results.png')
+    # Save the full visualization
+    plt_output_path = os.path.join('.', 'histogram_equalization_results.png')
+    plt.savefig(plt_output_path)
+    print(f"Saved {plt_output_path}")
     
     # Part 2: Histogram Matching
     if args.verbose:
@@ -137,12 +164,18 @@ def main():
         processed_img = perform_hist_matching(input_array, ref_array, mode)
         plot_image_with_histogram(processed_img, f'Matched ({mode})', axes[i, 0], axes[i, 1])
         
+        # Save individual matched image
+        save_image(processed_img, f'matched_{mode}.png')
+        
         # Analyze matched image
         analyze_histogram(processed_img, f"Matched Image ({mode})", args.verbose)
     
     plt.tight_layout()
     plt.subplots_adjust(top=0.92)
-    plt.savefig('histogram_matching_results.png')
+    # Save the full visualization
+    plt_output_path = os.path.join('.', 'histogram_matching_results.png')
+    plt.savefig(plt_output_path)
+    print(f"Saved {plt_output_path}")
     
     plt.show()
 

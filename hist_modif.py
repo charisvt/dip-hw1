@@ -23,6 +23,7 @@ def perform_histogram_modification(img_array, hist_ref, mode):
         input_levels = sorted(hist_input.keys())
         
         # Step 5: Greedy assignment
+        # Process input levels sequentially, assign to output levels based on accumulated counts
         current_output_idx = 0
         accumulated_count = 0
 
@@ -59,6 +60,7 @@ def perform_histogram_modification(img_array, hist_ref, mode):
         input_levels = sorted(hist_input.keys())
         
         # Step 5: Non-greedy assignment
+        # More balanced approach that considers bin count deficiency
         current_output_idx = 0
         accumulated_count = 0
         
